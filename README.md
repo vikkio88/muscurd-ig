@@ -6,7 +6,7 @@ Already done it in C# and Avalonia in [here](https://github.com/vikkio88/muscurd
 ## Roadmap
 - [ ] TDD all entities
 - [ ] Design UI with Password Gating
-- [ ] Use [Clover]() to persist data
+- [ ] Use [Clover](https://github.com/ostafen/clover) to persist data
 - [ ] Github Action build/release for:
     - [ ] Linux
     - [ ] Mac

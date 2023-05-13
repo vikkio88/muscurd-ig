@@ -19,6 +19,23 @@ func NewCrypto(passkey string) Crypto {
 	return Crypto{key}
 }
 
+func (c Crypto) EncryptB64(content string) (string, error) {
+	res, err := c.Encrypt(content)
+	if err != nil {
+		return "", err
+	}
+	return c.B64Encode(res), nil
+}
+
+func (c Crypto) DecryptB64(content string) (string, error) {
+	res, err := c.B64Decode(content)
+	if err != nil {
+		return "", err
+	}
+
+	return c.Decrypt(res)
+}
+
 func (c Crypto) Encrypt(content string) (string, error) {
 	res, err := Encrypt(content, c.key)
 	return string(res), err
