@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"muscurdig/app"
+)
 
 func main() {
-	fmt.Println("Yo")
+
+	a := app.NewApp()
+
+	a.Run()
+
 }
