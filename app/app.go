@@ -21,8 +21,8 @@ type App struct {
 func NewApp() App {
 	// TODO: Move this to env or config
 	a := app.NewWithID("muscurd-ig_main")
-	w := a.NewWindow("Muscurd-iG")
-	w.Resize(fyne.NewSize(600, 480))
+	w := a.NewWindow("Muscurdi - micro password manager")
+	w.Resize(fyne.NewSize(450, 300))
 	w.SetFixedSize(true)
 	// all of this should be configurable
 

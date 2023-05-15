@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
@@ -9,8 +11,19 @@ import (
 )
 
 func GetPasswordListView(state binding.String) *fyne.Container {
-	return container.New(layout.NewVBoxLayout(),
-		widget.NewLabel("Password List View"),
-		getNavigation(state),
+	searchEntry := widget.NewEntry()
+	content := container.NewCenter(widget.NewLabel("0 Password Entries"))
+	searchBtn := widget.NewButton("Search", func() {
+		fmt.Println("Searched")
+		content.RemoveAll()
+		content.Add(container.NewCenter(widget.NewLabel("1 Password Entries")))
+	})
+
+	return container.New(layout.NewMaxLayout(),
+		container.NewBorder(
+			container.NewGridWithColumns(2, searchEntry, searchBtn),
+			nil, nil, nil,
+			content,
+		),
 	)
 }
