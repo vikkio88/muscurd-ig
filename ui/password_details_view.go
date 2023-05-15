@@ -8,9 +8,9 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func GetLoginView(state binding.String) *fyne.Container {
+func GetPasswordDetailsView(state binding.String) *fyne.Container {
 	return container.New(layout.NewVBoxLayout(),
-		widget.NewLabel("Login View"),
+		widget.NewLabel("Password Details View"),
 		getNavigation(state),
 	)
 }

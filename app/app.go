@@ -1,58 +1,68 @@
 package app
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
+	"muscurdig/enums"
+	"muscurdig/ui"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/data/binding"
 )
-
-type appState uint8
-
-const (
-	login appState = iota
-	view
-	quit
-)
-
-func (a appState) String() string {
-	switch a {
-	case login:
-		return "LOGIN"
-	case view:
-		return "VIEW"
-	case quit:
-		return "QUIT"
-	}
-
-	return "INVALID_STATE"
-}
 
 type App struct {
-	state appState
+	state       binding.String
+	views       map[string]*fyne.Container
+	application fyne.App
+	window      *fyne.Window
+	content     *fyne.Container
 }
 
 func NewApp() App {
+	// TODO: Move this to env or config
+	a := app.NewWithID("muscurd-ig_main")
+	w := a.NewWindow("Muscurd-iG")
+	w.Resize(fyne.NewSize(600, 480))
+	w.SetFixedSize(true)
+	// all of this should be configurable
+
+	initialState := enums.Login.String()
+	state := binding.BindString(&initialState)
 	return App{
-		state: login,
+		state:       state,
+		application: a,
+		window:      &w,
+		views: map[string]*fyne.Container{
+			enums.Login.String():   ui.GetLoginView(state),
+			enums.List.String():    ui.GetPasswordListView(state),
+			enums.Details.String(): ui.GetPasswordDetailsView(state),
+		},
 	}
+}
+
+func (a *App) GetView() *fyne.Container {
+	key, _ := a.state.Get()
+
+	if content, ok := a.views[key]; ok {
+		return content
+	}
+
+	return a.views[enums.Login.String()]
 }
 
 func (a *App) Run() {
-	fmt.Println("[q] to quit")
-	for a.state != quit {
-		fmt.Printf("state: %s\n\n", a.state)
-		c := getStr("> ")
-
-		if c == "q" {
-			a.state = quit
+	a.state.AddListener(binding.NewDataListener(func() {
+		// change this to be a structbind
+		val, _ := a.state.Get()
+		fmt.Printf("changed: %s\n", val)
+		if val == enums.Quit.String() {
+			a.application.Quit()
 		}
-	}
-}
 
-func getStr(prompt string) string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print(prompt)
-	text, _ := reader.ReadString('\n')
-	return strings.TrimSpace(text)
+		(*a.window).SetContent(a.GetView())
+	}))
+	w := *a.window
+	a.content = a.GetView()
+	w.SetContent(a.content)
+	w.ShowAndRun()
 }
