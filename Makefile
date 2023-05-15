@@ -5,4 +5,4 @@ run:
 tests:
 	go test ./...
 clean:
-	rm -rf bin/ db_files/
+	rm -rf bin/ muscurdi_db/
