@@ -2,15 +2,15 @@ package ui
 
 import (
 	"fmt"
+	s "muscurdig/state"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
-func GetPasswordListView(state binding.String) *fyne.Container {
+func GetPasswordListView(state *s.AppState) *fyne.Container {
 	searchEntry := widget.NewEntry()
 	content := container.NewCenter(widget.NewLabel("0 Password Entries"))
 	searchBtn := widget.NewButton("Search", func() {

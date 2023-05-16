@@ -1,15 +1,14 @@
 package app
 
 import (
-	"muscurdig/enums"
+	"muscurdig/state"
 	"os"
 )
 
-func getInitialState() string {
-	initialState := enums.Login.String()
+func getInitialState() state.AppState {
+	initialRoute := state.Login
 	if _, err := os.Stat("muscurdi_db"); os.IsNotExist(err) {
-		initialState = enums.Setup.String()
+		initialRoute = state.Setup
 	}
-
-	return initialState
+	return state.NewAppState(initialRoute)
 }

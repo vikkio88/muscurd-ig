@@ -3,26 +3,34 @@ package ui
 import (
 	"fmt"
 	"muscurdig/conf"
-	"muscurdig/enums"
+	"muscurdig/libs"
+	s "muscurdig/state"
 	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
-func GetSetupView(state binding.String) *fyne.Container {
+func GetSetupView(state *s.AppState) *fyne.Container {
 	passEntry := widget.NewPasswordEntry()
 
 	loginBtn := widget.NewButton("Login", func() {
 		entry := passEntry.Text
-		os.Mkdir(conf.DbFiles, 0644)
+		os.Mkdir(conf.DbFiles, 0700)
 
-		//TODO: Error this does not seem to work
-		os.WriteFile(fmt.Sprintf("%s/pwd", conf.DbFiles), []byte(entry), 0644)
-		state.Set(enums.List.String())
+		//TODO: This is temporary until I set clover
+		crypto := libs.NewCrypto(entry)
+		crypted, errCrypt := crypto.EncryptB64(entry)
+		if errCrypt != nil {
+			panic(errCrypt)
+		}
+		err := os.WriteFile(fmt.Sprintf("./%s/pwd", conf.DbFiles), []byte(crypted), 0644)
+		if err != nil {
+			panic(err)
+		}
+		state.NavigateTo(s.List)
 	})
 
 	return container.New(layout.NewCenterLayout(),
