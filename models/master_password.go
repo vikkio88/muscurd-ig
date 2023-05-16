@@ -6,6 +6,11 @@ type MasterPassword struct {
 	value string
 }
 
+func NewMasterPasswordFromB64(value string) MasterPassword {
+	return MasterPassword{
+		value,
+	}
+}
 func NewMasterPassword(value string) MasterPassword {
 	c := libs.NewCrypto(value)
 	v, _ := c.EncryptB64(value)
