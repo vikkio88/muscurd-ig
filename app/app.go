@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 	"muscurdig/conf"
-	"muscurdig/state"
-	s "muscurdig/state"
+	c "muscurdig/context"
+	"muscurdig/db"
 	"muscurdig/ui"
 	"time"
 
@@ -14,8 +14,8 @@ import (
 
 type App struct {
 	isLogEnabled bool
-	state        *s.AppState
-	views        map[s.AppRoute]*fyne.Container
+	ctx          *c.AppContext
+	views        map[c.AppRoute]func() *fyne.Container
 	application  fyne.App
 	window       *fyne.Window
 }
@@ -29,19 +29,21 @@ func NewApp() App {
 	))
 	w.SetFixedSize(conf.WindowFixed)
 	isLogEnabled := conf.EnableConsoleLog
+	db := db.NewDb(conf.DbFiles)
 
-	initialState := getInitialState()
+	ctx := setupContext(db, &w)
 
 	return App{
-		state:        &initialState,
+		ctx:          &ctx,
 		isLogEnabled: isLogEnabled,
 		application:  a,
 		window:       &w,
-		views: map[s.AppRoute]*fyne.Container{
-			s.Setup:   ui.GetSetupView(&initialState),
-			s.Login:   ui.GetLoginView(&initialState),
-			s.List:    ui.GetPasswordListView(&initialState),
-			s.Details: ui.GetPasswordDetailsView(&initialState),
+		views: map[c.AppRoute]func() *fyne.Container{
+			c.Setup:     func() *fyne.Container { return ui.GetSetupView(&ctx) },
+			c.Login:     func() *fyne.Container { return ui.GetLoginView(&ctx) },
+			c.List:      func() *fyne.Container { return ui.GetPasswordListView(&ctx) },
+			c.Details:   func() *fyne.Container { return ui.GetPasswordDetailsView(&ctx) },
+			c.AddUpdate: func() *fyne.Container { return ui.GetPasswordAddUpdateView(&ctx) },
 		},
 	}
 }
@@ -49,13 +51,13 @@ func NewApp() App {
 // TODO: for the next project this might be better as a Container
 // or Factory with Cache and a stack to simulate pop push routes
 func (a *App) getView() *fyne.Container {
-	key := a.state.CurrentRoute()
+	key := a.ctx.CurrentRoute()
 
 	if content, ok := a.views[key]; ok {
-		return content
+		return content()
 	}
 
-	return a.views[s.Login]
+	return a.views[c.Login]()
 }
 func (a *App) setView() {
 	(*a.window).SetContent(a.getView())
@@ -68,10 +70,10 @@ func (a *App) log(msg string) {
 }
 
 func (a *App) Run() {
-	a.state.OnRouteChange(func() {
-		val := a.state.CurrentRoute()
+	a.ctx.OnRouteChange(func() {
+		val := a.ctx.CurrentRoute()
 		a.log(fmt.Sprintf("route state changed %s", val))
-		if val == state.Quit {
+		if val == c.Quit {
 			a.application.Quit()
 		}
 
@@ -79,4 +81,20 @@ func (a *App) Run() {
 	})
 	a.setView()
 	(*a.window).ShowAndRun()
+
+	a.log("exiting...")
+}
+
+func (a *App) Cleanup() {
+	a.log("Running cleanup")
+	a.ctx.Db.Close()
+	a.log("cleanup finished")
+}
+
+func setupContext(db *db.Db, w *fyne.Window) c.AppContext {
+	initialRoute := c.Login
+	if _, err := db.GetMasterPassword(); err != nil {
+		initialRoute = c.Setup
+	}
+	return c.NewAppContext(initialRoute, db, w)
 }
