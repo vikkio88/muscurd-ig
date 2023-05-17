@@ -26,7 +26,7 @@ func TestDtoContruction(t *testing.T) {
 	pe := models.NewPasswordEntry(website, username, password)
 	crypto := libs.NewCrypto("somepassword")
 
-	dto := pe.DTO(crypto)
+	dto := pe.DTO(&crypto)
 	assert.Equal(t, website, dto.Website)
 	assert.Equal(t, username, dto.Username)
 	assert.NotEqual(t, password, dto.Password)
