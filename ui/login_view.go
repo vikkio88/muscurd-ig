@@ -2,8 +2,7 @@ package ui
 
 import (
 	"image/color"
-	"muscurdig/db"
-	s "muscurdig/state"
+	c "muscurdig/context"
 
 	"time"
 
@@ -14,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func GetLoginView(state *s.AppState) *fyne.Container {
+func GetLoginView(ctx *c.AppContext) *fyne.Container {
 	passEntry := widget.NewPasswordEntry()
 	errorMsg := canvas.NewText("Wrong password", color.RGBA{255, 0, 0, 255})
 	errorMsg.Alignment = fyne.TextAlignCenter
@@ -23,9 +22,14 @@ func GetLoginView(state *s.AppState) *fyne.Container {
 	loginBtn := widget.NewButton("Login", func() {
 		entry := passEntry.Text
 		passEntry.SetText("")
-		masterPassword := db.GetMasterPassword()
+
+		masterPassword, err := ctx.Db.GetMasterPassword()
+		if err != nil {
+			panic(err)
+		}
+
 		if masterPassword.Check(entry) {
-			state.NavigateTo(s.List)
+			ctx.NavigateTo(c.List)
 			return
 		}
 
