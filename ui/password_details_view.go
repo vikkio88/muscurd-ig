@@ -11,10 +11,21 @@ import (
 )
 
 func GetPasswordDetailsView(ctx *c.AppContext) *fyne.Container {
+	successMsg := newFlashTxtPlaceholder()
 	password := ctx.Db.GetPasswordById(ctx.RouteParam.(string))
 	passEntry := widget.NewPasswordEntry()
 	passEntry.SetText(password.Password)
 	passEntry.Disable()
+
+	copyUsernameBtn := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
+		ctx.GetClipboard().SetContent(password.Username)
+		successMessage("Username copied to clipboard.", successMsg)
+	})
+	copyPasswordBtn := widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
+		ctx.GetClipboard().SetContent(password.Password)
+		successMessage("Password copied to clipboard.", successMsg)
+	})
+
 	return container.New(layout.NewMaxLayout(),
 		container.NewBorder(
 			nil,
@@ -29,25 +40,26 @@ func GetPasswordDetailsView(ctx *c.AppContext) *fyne.Container {
 						ctx.NavigateTo(c.List)
 					}),
 				),
+				container.NewCenter(successMsg),
 			),
 			nil, nil,
-			container.NewCenter(
-				container.NewMax(
-					container.NewVBox(
-						h1("Password Details"),
-						h2(password.Website),
-						container.NewGridWithColumns(2,
-							h2(password.Username),
-							widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
-								ctx.GetClipboard().SetContent(password.Username)
-							}),
-						),
-						container.NewGridWithColumns(2,
-							passEntry,
-							widget.NewButtonWithIcon("", theme.ContentCopyIcon(), func() {
-								ctx.GetClipboard().SetContent(password.Password)
-							}),
-						),
+			container.NewMax(
+				container.NewVBox(
+					container.NewCenter(h1("Password Details")),
+					h2(password.Website),
+					container.NewBorder(
+						nil,
+						nil,
+						nil,
+						copyUsernameBtn,
+						h2(password.Username),
+					),
+					container.NewBorder(
+						nil,
+						nil,
+						nil,
+						copyPasswordBtn,
+						passEntry,
 					),
 				),
 			),
