@@ -28,6 +28,10 @@ func (s *AppContext) GetClipboard() fyne.Clipboard {
 	return (*w).Clipboard()
 }
 
+func (s *AppContext) GetWindow() fyne.Window {
+	return *s.w
+}
+
 // func (s *AppContext) GetAppCanvas() fyne.Canvas {
 // 	w := s.w
 // 	return (*w).Canvas()

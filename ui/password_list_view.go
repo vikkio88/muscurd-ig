@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"golang.org/x/exp/slices"
@@ -123,22 +124,31 @@ func populateList(content *fyne.Container, passwords []models.PasswordEntry, dat
 				}
 
 				btnDelete.OnTapped = func() {
-					lst, _ := dataList.Get()
+					dialog.ShowConfirm(
+						fmt.Sprintf("Deleting password for \"%s\"", pe.Website),
+						"Are you sure?",
+						func(b bool) {
+							if b {
+								lst, _ := dataList.Get()
 
-					idx := slices.IndexFunc(lst, func(pei interface{}) bool {
-						peii, ok := pei.(models.PasswordEntry)
-						return ok && pe.Id == peii.Id
-					})
+								idx := slices.IndexFunc(lst, func(pei interface{}) bool {
+									peii, ok := pei.(models.PasswordEntry)
+									return ok && pe.Id == peii.Id
+								})
 
-					// this should never happen
-					if idx < 0 {
-						return
-					}
+								// this should never happen
+								if idx < 0 {
+									return
+								}
 
-					lst = append(lst[:idx], lst[idx+1:]...)
-					dataList.Set(lst)
-					ctx.Db.DeletePasswordEntry(pe.Id)
-					ctx.NavigateTo(c.List)
+								lst = append(lst[:idx], lst[idx+1:]...)
+								dataList.Set(lst)
+								ctx.Db.DeletePasswordEntry(pe.Id)
+
+							}
+						},
+						ctx.GetWindow(),
+					)
 				}
 			},
 		),

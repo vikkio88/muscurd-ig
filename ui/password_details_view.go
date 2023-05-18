@@ -1,11 +1,12 @@
 package ui
 
 import (
+	"fmt"
 	c "muscurdig/context"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -26,7 +27,7 @@ func GetPasswordDetailsView(ctx *c.AppContext) *fyne.Container {
 		successMessage("Password copied to clipboard.", successMsg)
 	})
 
-	return container.New(layout.NewMaxLayout(),
+	return container.NewMax(
 		container.NewBorder(
 			nil,
 			container.NewBorder(nil, nil,
@@ -36,8 +37,17 @@ func GetPasswordDetailsView(ctx *c.AppContext) *fyne.Container {
 						ctx.NavigateToWithParam(c.AddUpdate, password.Id)
 					}),
 					widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
-						ctx.Db.DeletePasswordEntry(password.Id)
-						ctx.NavigateTo(c.List)
+						dialog.ShowConfirm(
+							fmt.Sprintf("Deleting password for \"%s\"", password.Website),
+							"Are you sure?",
+							func(b bool) {
+								if b {
+									ctx.Db.DeletePasswordEntry(password.Id)
+									ctx.NavigateTo(c.List)
+								}
+							},
+							ctx.GetWindow(),
+						)
 					}),
 				),
 				container.NewCenter(successMsg),
