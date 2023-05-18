@@ -22,10 +22,16 @@ func NewAppContext(initialRoute AppRoute, db *db.Db, window *fyne.Window) AppCon
 		w:     window,
 	}
 }
+
 func (s *AppContext) GetClipboard() fyne.Clipboard {
 	w := s.w
 	return (*w).Clipboard()
 }
+
+// func (s *AppContext) GetAppCanvas() fyne.Canvas {
+// 	w := s.w
+// 	return (*w).Canvas()
+// }
 
 // You could add multiple OnrouteChange
 // todo: maybe needs to find a better name for this
