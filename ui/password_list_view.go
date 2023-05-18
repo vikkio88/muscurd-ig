@@ -3,83 +3,150 @@ package ui
 import (
 	"fmt"
 	c "muscurdig/context"
+	"muscurdig/models"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"golang.org/x/exp/slices"
 )
 
 func GetPasswordListView(ctx *c.AppContext) *fyne.Container {
 	passwordCount := ctx.Db.GetPasswordCount()
-	searchEntry := widget.NewEntry()
-	content := container.New(layout.NewMaxLayout(), container.NewCenter(widget.NewLabel(fmt.Sprintf("%d Password Entries", passwordCount))))
-	searchBtn := widget.NewButtonWithIcon("Search", theme.SearchIcon(), func() {
-		passwords := ctx.Db.GetAllPasswords()
-		content.RemoveAll()
-		content.Add(
-			// TODO: need to do this a Bindable List so removing items will refresh here too
-			widget.NewList(
-				func() int { return len(passwords) },
-				getPasswordEntryRow,
-				func(lii widget.ListItemID, co fyne.CanvasObject) {
-					label, btnView, btnEdit, btnDelete := getListWidgetsFromContainer(&co)
-					pe := passwords[lii]
-					label.SetText(pe.Website)
+	baseContentString := fmt.Sprintf("%d Password Entries", passwordCount)
+	content := getBaseContent(baseContentString)
+	dataList := binding.NewUntypedList()
+	listAllBtn := widget.NewButtonWithIcon("", theme.ListIcon(), func() {
+		populateList(content, ctx.Db.GetAllPasswords(), dataList, ctx)
 
-					btnView.OnTapped = func() {
-						ctx.NavigateToWithParam(c.Details, pe.Id)
-					}
-
-					btnEdit.OnTapped = func() {
-						ctx.NavigateToWithParam(c.AddUpdate, pe.Id)
-					}
-					btnDelete.OnTapped = func() {
-						ctx.Db.DeletePasswordEntry(pe.Id)
-						ctx.NavigateTo(c.List)
-					}
-				},
-			),
-		)
 	})
+	searchEntry := widget.NewEntry()
+	searchBtn := widget.NewButtonWithIcon("Search", theme.SearchIcon(), func() {
+		searchTerm := searchEntry.Text
+		populateList(content, ctx.Db.FilterPasswords(searchTerm), dataList, ctx)
+	})
+	searchBtn.Disable()
+	searchEntry.PlaceHolder = "Website or username..."
+	searchEntry.OnChanged = func(s string) {
+		searchBtn.Disable()
+		if len(s) > 2 {
+			searchBtn.Enable()
+		}
 
-	return container.New(layout.NewMaxLayout(),
+		if len(s) == 0 {
+			content.RemoveAll()
+			content.Add(getBaseContent(baseContentString))
+		}
+	}
+
+	return container.NewMax(
 		container.NewBorder(
-			container.NewGridWithColumns(2, searchEntry, searchBtn),
-			container.NewBorder(nil, nil, nil, widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
-				ctx.NavigateTo(c.AddUpdate)
-			})),
+			container.NewBorder(nil, nil, nil,
+				container.NewHBox(searchBtn, listAllBtn),
+				searchEntry,
+			),
+			container.NewBorder(nil, nil, nil,
+				widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
+					ctx.NavigateTo(c.AddUpdate)
+				},
+				)),
 			nil, nil,
 			content,
-		),
-	)
+		))
 }
 
+// DataList Items
+// Renders a row for the result list
 func getPasswordEntryRow() fyne.CanvasObject {
 	return container.NewGridWithColumns(3,
 		widget.NewLabel(""),
 		container.NewMax(),
-		container.NewBorder(
-			nil,
-			nil,
-			nil,
+		rightAligned(
 			container.NewHBox(
-				widget.NewButtonWithIcon("", theme.FileTextIcon(), func() {}),
-				widget.NewButtonWithIcon("", theme.DocumentCreateIcon(), func() {}),
+				widget.NewButtonWithIcon("", theme.ZoomInIcon(), func() {}),
 				widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {}),
 			),
 		),
 	)
 }
-func getListWidgetsFromContainer(co *fyne.CanvasObject) (*widget.Label, *widget.Button, *widget.Button, *widget.Button) {
+
+// DataList Items
+// gives you items in the rendered row list
+func getListWidgetsFromContainer(co *fyne.CanvasObject) (*widget.Label, *widget.Button, *widget.Button) {
 	container := (*co).(*fyne.Container)
 	label := container.Objects[0].(*widget.Label)
 	btnBoxWrapper := container.Objects[2].(*fyne.Container)
 	btnBox := btnBoxWrapper.Objects[0].(*fyne.Container)
 	btnView := btnBox.Objects[0].(*widget.Button)
-	btnEdit := btnBox.Objects[1].(*widget.Button)
-	btnDelete := btnBox.Objects[2].(*widget.Button)
+	btnDelete := btnBox.Objects[1].(*widget.Button)
 
-	return label, btnView, btnEdit, btnDelete
+	return label, btnView, btnDelete
+}
+
+// DataList Items
+// Converts untyped list item to PasswordEntry
+func getPasswordEntryFromDI(item binding.DataItem) models.PasswordEntry {
+	v, _ := item.(binding.Untyped).Get()
+	return v.(models.PasswordEntry)
+}
+
+// populates the result list
+func populateList(content *fyne.Container, passwords []models.PasswordEntry, dataList binding.UntypedList, ctx *c.AppContext) {
+	// Resetting the results
+	list, _ := dataList.Get()
+	list = list[:0]
+	dataList.Set(list)
+	//
+	for _, p := range passwords {
+		dataList.Append(p)
+	}
+
+	content.RemoveAll()
+	if dataList.Length() < 1 {
+		content.Add(getBaseContent("No Password..."))
+		return
+	}
+
+	content.Add(
+		widget.NewListWithData(
+			dataList,
+			getPasswordEntryRow,
+			func(di binding.DataItem, co fyne.CanvasObject) {
+				label, btnView, btnDelete := getListWidgetsFromContainer(&co)
+				pe := getPasswordEntryFromDI(di)
+				label.SetText(pe.Website)
+
+				btnView.OnTapped = func() {
+					ctx.NavigateToWithParam(c.Details, pe.Id)
+				}
+
+				btnDelete.OnTapped = func() {
+					lst, _ := dataList.Get()
+
+					idx := slices.IndexFunc(lst, func(pei interface{}) bool {
+						peii, ok := pei.(models.PasswordEntry)
+						return ok && pe.Id == peii.Id
+					})
+
+					// this should never happen
+					if idx < 0 {
+						return
+					}
+
+					lst = append(lst[:idx], lst[idx+1:]...)
+					dataList.Set(lst)
+					ctx.Db.DeletePasswordEntry(pe.Id)
+					ctx.NavigateTo(c.List)
+				}
+			},
+		),
+	)
+
+}
+
+// gives us the basic centered text result
+func getBaseContent(text string) *fyne.Container {
+	return container.NewMax(container.NewCenter(widget.NewLabel(text)))
 }

@@ -120,18 +120,30 @@ func (db *Db) UpdatePasswordEntry(pe models.PasswordEntry) error {
 	return db.clover.UpdateById(passwordEntryCollection, pe.Id, doc.ToMap())
 }
 
+func (db *Db) FilterPasswords(search string) []models.PasswordEntry {
+	pwDtosDocs, _ := db.clover.FindAll(
+		c.NewQuery(passwordEntryCollection).Where(
+			c.Field("Website").Like(search).Or(
+				c.Field("Username").Like(search),
+			)))
+	return db.loadManyPasswordEntry(pwDtosDocs)
+}
+
 func (db *Db) GetAllPasswords() []models.PasswordEntry {
 	pwDtosDocs, _ := db.clover.FindAll(c.NewQuery(passwordEntryCollection))
+	return db.loadManyPasswordEntry(pwDtosDocs)
+}
+
+func (db *Db) loadManyPasswordEntry(docs []*c.Document) []models.PasswordEntry {
 	crypto := db.GetCryptoInstance()
-	result := make([]models.PasswordEntry, len(pwDtosDocs))
-	for i, doc := range pwDtosDocs {
+	result := make([]models.PasswordEntry, len(docs))
+	for i, doc := range docs {
 		dto := loadPasswordEntryDto(doc)
 		result[i] = dto.ToPasswordEntry(crypto)
 	}
 
 	return result
 }
-
 func loadPasswordEntryDto(doc *c.Document) *models.PasswordEntryDto {
 	var dto models.PasswordEntryDto
 	doc.Unmarshal(&dto)
