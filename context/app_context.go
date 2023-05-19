@@ -8,6 +8,7 @@ import (
 )
 
 type AppContext struct {
+	Version    string
 	Route      binding.String
 	RouteParam any
 	Db         *db.Db

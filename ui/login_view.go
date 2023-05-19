@@ -5,7 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -30,12 +29,17 @@ func GetLoginView(ctx *c.AppContext) *fyne.Container {
 		errorMessage("Wrong password", errorMsg)
 	})
 
-	return container.New(layout.NewCenterLayout(),
-		container.NewVBox(
-			widget.NewLabel("Insert Master Password"),
-			passEntry,
-			loginBtn,
-			errorMsg,
+	return container.NewBorder(
+		nil,
+		centered(small(ctx.Version)),
+		nil, nil,
+		centered(
+			container.NewVBox(
+				widget.NewLabel("Insert Master Password"),
+				passEntry,
+				loginBtn,
+				errorMsg,
+			),
 		),
 	)
 }

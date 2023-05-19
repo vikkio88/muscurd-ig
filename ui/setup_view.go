@@ -9,7 +9,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -32,11 +31,16 @@ func GetSetupView(ctx *c.AppContext) *fyne.Container {
 		ctx.NavigateTo(c.List)
 	})
 
-	return container.New(layout.NewCenterLayout(),
-		container.New(layout.NewVBoxLayout(),
-			widget.NewLabel("Generate Master Password"),
-			passEntry,
-			loginBtn,
+	return container.NewBorder(
+		nil,
+		centered(small(ctx.Version)),
+		nil, nil,
+		centered(
+			container.NewVBox(
+				widget.NewLabel("Generate Master Password"),
+				passEntry,
+				loginBtn,
+			),
 		),
 	)
 }
