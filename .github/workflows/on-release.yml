@@ -34,15 +34,44 @@ jobs:
   #     - name: Build
   #       run: make build-linux
 
+  #     - name: Rename archive
+  #       run: mv bin/muscurdig.tar.xz bin/muscurdig_linux.tar.xz
+
       # - name: Upload Bin Linux
       #   uses: djn24/add-asset-to-release@v1
       #   with:
       #     token: ${{secrets.GITHUB_TOKEN}}
-      #     path: 'bin/muscurdig.tar.xz'
+      #     path: 'bin/muscurdig_linux.tar.xz'
 
-  publish-binaries-mac:
+  # publish-binaries-mac:
+  #   timeout-minutes: 20
+  #   runs-on: macos-latest
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
+
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v4
+
+  #     - name: Install FyneCLi tool
+  #       run: go install fyne.io/fyne/v2/cmd/fyne@latest
+
+  #     - name: Build
+  #       run: make build-mac
+      
+  #     - name: Zip App
+  #       run: zip -vr muscurdi_macos.zip bin/muscurdig.app -x "*.DS_Store" && mv muscurdi_macos.zip bin/
+
+      # - name: Upload MacOs Bin
+      #   uses: djn24/add-asset-to-release@v1
+      #   with:
+      #     token: ${{secrets.GITHUB_TOKEN}}
+      #     path: 'bin/muscurdi_macos.zip'
+
+  publish-binaries-win:
     timeout-minutes: 20
-    runs-on: macos-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -50,18 +79,26 @@ jobs:
 
       - name: Setup Go
         uses: actions/setup-go@v4
+      
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
 
       - name: Install FyneCLi tool
         run: go install fyne.io/fyne/v2/cmd/fyne@latest
 
       - name: Build
-        run: make build-mac
+        run: make build-win
       
-      - name: Zip App
-        run: zip -vr muscurdi.zip bin/muscurdig.app -x "*.DS_Store" && ls 
+      - name: Check
+        run: ls bin/
+      
+      # - name: Zip App
+      #   run: zip -vr muscurdi_macos.zip bin/muscurdig.app -x "*.DS_Store" && mv muscurdi_macos.zip bin/
 
-      # - name: Upload Bin Linux
+      # - name: Upload MacOs Bin
       #   uses: djn24/add-asset-to-release@v1
       #   with:
       #     token: ${{secrets.GITHUB_TOKEN}}
-      #     path: 'bin/muscurdig.tar.xz'
+      #     path: 'bin/muscurdi_macos.zip'
