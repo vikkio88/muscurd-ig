@@ -33,7 +33,7 @@ jobs:
       - name: Rename archive
         run: mv bin/muscurdig.tar.xz bin/muscurdig_linux.tar.xz
 
-      - name: Upload Bin Linux
+      - name: Upload Linux Bin
         uses: djn24/add-asset-to-release@v1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
