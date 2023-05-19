@@ -17,5 +17,8 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
 
+      - name: Setup GCC
+        uses: egor-tensin/setup-gcc@v1
+
       - name: run tests
         run: make tests
