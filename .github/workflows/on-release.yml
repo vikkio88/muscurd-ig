@@ -95,4 +95,4 @@ jobs:
         uses: djn24/add-asset-to-release@v1
         with:
           token: ${{secrets.GITHUB_TOKEN}}
-          path: 'bin/muscurdi_win.zip'
+          path: 'bin/muscurdig_win.zip'
