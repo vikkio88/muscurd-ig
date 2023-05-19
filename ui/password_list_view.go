@@ -42,17 +42,42 @@ func GetPasswordListView(ctx *c.AppContext) *fyne.Container {
 		}
 	}
 
+	removeAllBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
+		dialog.ShowConfirm("Confirmation", "Are you sure you want to remove all the saved password?",
+			func(b bool) {
+				if !b {
+					return
+				}
+
+				ctx.Db.Drop()
+				ctx.NavigateTo(c.Setup)
+			},
+			ctx.GetWindow(),
+		)
+	})
+	aboutPageBtn := widget.NewButtonWithIcon("", theme.InfoIcon(), func() {
+		ctx.NavigateTo(c.About)
+	})
+
+	addNewBtn := widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
+		ctx.NavigateTo(c.AddUpdate)
+	})
+
 	return container.NewMax(
 		container.NewBorder(
 			container.NewBorder(nil, nil, nil,
 				container.NewHBox(searchBtn, listAllBtn),
 				searchEntry,
 			),
-			container.NewBorder(nil, nil, nil,
-				widget.NewButtonWithIcon("Add", theme.ContentAddIcon(), func() {
-					ctx.NavigateTo(c.AddUpdate)
-				},
-				)),
+			container.NewBorder(
+				nil,
+				nil,
+				container.NewHBox(
+					aboutPageBtn,
+					removeAllBtn,
+				),
+				addNewBtn,
+			),
 			nil, nil,
 			content,
 		))
@@ -128,24 +153,23 @@ func populateList(content *fyne.Container, passwords []models.PasswordEntry, dat
 						fmt.Sprintf("Deleting password for \"%s\"", pe.Website),
 						"Are you sure?",
 						func(b bool) {
-							if b {
-								lst, _ := dataList.Get()
-
-								idx := slices.IndexFunc(lst, func(pei interface{}) bool {
-									peii, ok := pei.(models.PasswordEntry)
-									return ok && pe.Id == peii.Id
-								})
-
-								// this should never happen
-								if idx < 0 {
-									return
-								}
-
-								lst = append(lst[:idx], lst[idx+1:]...)
-								dataList.Set(lst)
-								ctx.Db.DeletePasswordEntry(pe.Id)
-
+							if !b {
+								return
 							}
+
+							lst, _ := dataList.Get()
+							idx := slices.IndexFunc(lst, func(pei interface{}) bool {
+								peii, ok := pei.(models.PasswordEntry)
+								return ok && pe.Id == peii.Id
+							})
+
+							// this should never happen
+							if idx < 0 {
+								return
+							}
+							lst = append(lst[:idx], lst[idx+1:]...)
+							dataList.Set(lst)
+							ctx.Db.DeletePasswordEntry(pe.Id)
 						},
 						ctx.GetWindow(),
 					)
