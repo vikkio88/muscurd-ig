@@ -15,6 +15,7 @@ build-mac: clean
 	fyne package -os darwin -icon assets/logo.png --release --tags prod
 	mv muscurdig.app bin/
 	sh scripts/restore_version.sh
+
 build-linux: clean
 	mkdir bin
 	sh scripts/update_version.sh

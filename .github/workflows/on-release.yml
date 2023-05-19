@@ -9,9 +9,40 @@ on:
       - "feat/gh-actions"
 
 jobs:
-  publish-binaries:
+  # publish-binaries-linux:
+  #   timeout-minutes: 20
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v1
+
+  #     - name: Setup Go
+  #       uses: actions/setup-go@v4
+
+  #     - name: Get dependencies
+  #       run: |
+  #         sudo apt-get update \
+  #         && sudo apt-get install gcc \
+  #         libgl1-mesa-dev libegl1-mesa-dev \
+  #         libgles2-mesa-dev libx11-dev xorg-dev \
+  #         libwayland-dev libxkbcommon-dev bc
+
+  #     - name: Install FyneCLi tool
+  #       run: go install fyne.io/fyne/v2/cmd/fyne@latest
+
+  #     - name: Build Binary Linux
+  #       run: make build-linux
+
+      # - name: Upload Bin Linux
+      #   uses: djn24/add-asset-to-release@v1
+      #   with:
+      #     token: ${{secrets.GITHUB_TOKEN}}
+      #     path: 'bin/muscurdig.tar.xz'
+
+  publish-binaries-mac:
     timeout-minutes: 20
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -20,20 +51,17 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
 
-      - name: Get dependencies
-        run: |
-          sudo apt-get update \
-          && sudo apt-get install gcc \
-          libgl1-mesa-dev libegl1-mesa-dev \
-          libgles2-mesa-dev libx11-dev xorg-dev \
-          libwayland-dev libxkbcommon-dev bc
-      
       - name: Install FyneCLi tool
         run: go install fyne.io/fyne/v2/cmd/fyne@latest
 
-      
       - name: Build Binary Linux
-        run: make build-linux
+        run: make build-mac
       
       - name: Check
-        run : ls && ls bin/
+        run: ls bin/
+
+      # - name: Upload Bin Linux
+      #   uses: djn24/add-asset-to-release@v1
+      #   with:
+      #     token: ${{secrets.GITHUB_TOKEN}}
+      #     path: 'bin/muscurdig.tar.xz'
