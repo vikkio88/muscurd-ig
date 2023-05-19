@@ -1,0 +1,1 @@
+mv conf/conf_prod.go.bak conf/conf_prod.go

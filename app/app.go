@@ -32,6 +32,7 @@ func NewApp() App {
 	db := db.NewDb(conf.DbFiles)
 
 	ctx := setupContext(db, &w)
+	ctx.Version = conf.Version
 
 	return App{
 		ctx:          &ctx,
@@ -44,6 +45,7 @@ func NewApp() App {
 			c.List:      func() *fyne.Container { return ui.GetPasswordListView(&ctx) },
 			c.Details:   func() *fyne.Container { return ui.GetPasswordDetailsView(&ctx) },
 			c.AddUpdate: func() *fyne.Container { return ui.GetPasswordAddUpdateView(&ctx) },
+			c.About:     func() *fyne.Container { return ui.GetAboutView(&ctx) },
 		},
 	}
 }

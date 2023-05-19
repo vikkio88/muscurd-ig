@@ -1,3 +1,5 @@
+//go:build !prod
+
 package conf
 
 const (
@@ -8,4 +10,5 @@ const (
 	WindowFixed      = true
 	DbFiles          = "muscurdi_db"
 	EnableConsoleLog = true
+	Version          = "dev"
 )
