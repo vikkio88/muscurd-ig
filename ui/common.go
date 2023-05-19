@@ -24,6 +24,12 @@ func h2(text string) *canvas.Text {
 	return txt
 }
 
+func small(text string) *canvas.Text {
+	txt := canvas.NewText(text, color.White)
+	txt.TextSize = 10
+	return txt
+}
+
 func errorMessage(errorMsg string, textItem *canvas.Text) {
 	flashMessage(
 		errorMsg, textItem,
@@ -59,6 +65,9 @@ func backButton(ctx *context.AppContext, route context.AppRoute) *widget.Button 
 	})
 }
 
+func centered(object fyne.CanvasObject) *fyne.Container {
+	return container.NewCenter(object)
+}
 func rightAligned(object fyne.CanvasObject) *fyne.Container {
 	return container.NewBorder(nil, nil, nil, object)
 }
