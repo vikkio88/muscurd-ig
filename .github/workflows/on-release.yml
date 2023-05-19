@@ -31,7 +31,7 @@ jobs:
   #     - name: Install FyneCLi tool
   #       run: go install fyne.io/fyne/v2/cmd/fyne@latest
 
-  #     - name: Build Binary Linux
+  #     - name: Build
   #       run: make build-linux
 
       # - name: Upload Bin Linux
@@ -54,11 +54,11 @@ jobs:
       - name: Install FyneCLi tool
         run: go install fyne.io/fyne/v2/cmd/fyne@latest
 
-      - name: Build Binary Linux
+      - name: Build
         run: make build-mac
       
-      - name: Check
-        run: ls bin/
+      - name: Zip App
+        run: zip -vr muscurdi.zip bin/muscurdig.app -x "*.DS_Store" && ls 
 
       # - name: Upload Bin Linux
       #   uses: djn24/add-asset-to-release@v1
