@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"fmt"
 	"muscurdig/libs"
 	"muscurdig/models"
 
@@ -38,6 +39,12 @@ func NewDb(dbFiles string) *Db {
 
 func (db *Db) Close() error {
 	return db.clover.Close()
+}
+
+func (db *Db) Drop() {
+	db.clover.DropCollection(passwordEntryCollection)
+	db.clover.DropCollection(masterPasswordCollection)
+	db.cache = map[string]any{}
 }
 
 func (db *Db) SaveMasterPassword(mp models.MasterPassword) (models.MasterPassword, error) {
@@ -114,6 +121,7 @@ func (db *Db) GetPasswordById(id string) models.PasswordEntry {
 func (db *Db) DeletePasswordEntry(id string) {
 	db.clover.DeleteById(passwordEntryCollection, id)
 }
+
 func (db *Db) UpdatePasswordEntry(pe models.PasswordEntry) error {
 	dto := pe.DTO(db.GetCryptoInstance())
 	doc := c.NewDocumentOf(dto)
@@ -121,10 +129,11 @@ func (db *Db) UpdatePasswordEntry(pe models.PasswordEntry) error {
 }
 
 func (db *Db) FilterPasswords(search string) []models.PasswordEntry {
+	searchPattern := fmt.Sprintf("(?i)%s", search)
 	pwDtosDocs, _ := db.clover.FindAll(
 		c.NewQuery(passwordEntryCollection).Where(
-			c.Field("Website").Like(search).Or(
-				c.Field("Username").Like(search),
+			c.Field("website").Like(searchPattern).Or(
+				c.Field("username").Like(searchPattern),
 			)))
 	return db.loadManyPasswordEntry(pwDtosDocs)
 }
