@@ -45,9 +45,9 @@ func (p *PasswordEntry) DTO(crypto *libs.Crypto) PasswordEntryDto {
 
 type PasswordEntryDto struct {
 	Id       string
-	Website  string
-	Username string
-	Password string
+	Website  string `clover:"website"`
+	Username string `clover:"username"`
+	Password string `clover:"password"`
 }
 
 func (p *PasswordEntryDto) ToPasswordEntry(crypto *libs.Crypto) PasswordEntry {
