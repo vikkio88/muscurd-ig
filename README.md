@@ -22,10 +22,10 @@ Already done it in C# and Avalonia in [here](https://github.com/vikkio88/muscurd
     - [ ] Change the font colour of disable Entry
 - [x] Remove console opening/config stop logs on build
 - [x] Handle permission for file creation on os
-- [ ] Github Action build/release for:
-    - [ ] Linux
-    - [ ] Mac
-    - [ ] Windows
+- [x] Github Action build/release for:
+    - [x] Linux
+    - [x] Mac
+    - [x] Windows
 
 
 ## Debt
