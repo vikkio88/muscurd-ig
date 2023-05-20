@@ -34,6 +34,8 @@ func NewApp() App {
 	ctx := setupContext(db, &w)
 	ctx.Version = conf.Version
 
+	a.Settings().SetTheme(&ui.MuscurdigTheme{})
+
 	return App{
 		ctx:          &ctx,
 		isLogEnabled: isLogEnabled,
