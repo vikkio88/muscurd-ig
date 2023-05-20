@@ -18,8 +18,8 @@ Already done it in C# and Avalonia in [here](https://github.com/vikkio88/muscurd
 - [x] Add version on main screen
 - [x] Add link to repo on a About page/modal
 - [ ] Add `[Enter]` and `SetFocus` on first Screen (may need to do a post render action after the route component is mounted)
-- [ ] Hack on theme
-    - [ ] Change the font colour of disable Entry
+- [x] Hack on theme
+    - [x] Change the font colour of disable Entry
 - [x] Remove console opening/config stop logs on build
 - [x] Handle permission for file creation on os
 - [x] Github Action build/release for:

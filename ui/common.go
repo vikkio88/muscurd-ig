@@ -13,19 +13,19 @@ import (
 )
 
 func h1(text string) *canvas.Text {
-	txt := canvas.NewText(text, color.White)
+	txt := canvas.NewText(text, theme.ForegroundColor())
 	txt.TextSize = 20
 	return txt
 }
 
 func h2(text string) *canvas.Text {
-	txt := canvas.NewText(text, color.White)
+	txt := canvas.NewText(text, theme.ForegroundColor())
 	txt.TextSize = 18
 	return txt
 }
 
 func small(text string) *canvas.Text {
-	txt := canvas.NewText(text, color.White)
+	txt := canvas.NewText(text, theme.ForegroundColor())
 	txt.TextSize = 10
 	return txt
 }
@@ -56,7 +56,7 @@ func flashMessage(msg string, textItem *canvas.Text, duration time.Duration, col
 }
 
 func newFlashTxtPlaceholder() *canvas.Text {
-	return canvas.NewText("", color.White)
+	return canvas.NewText("", theme.ForegroundColor())
 }
 
 func backButton(ctx *context.AppContext, route context.AppRoute) *widget.Button {
