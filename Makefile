@@ -25,5 +25,7 @@ build-linux: clean
 
 build-win: clean
 	mkdir bin
+	sh scripts/update_version.sh
 	fyne package -os windows -icon assets/logo.png --release --tags prod --appID me.vikkio.muscurdigwin
 	mv muscurdig.exe bin/
+	sh scripts/restore_version.sh
