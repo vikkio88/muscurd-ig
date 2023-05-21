@@ -42,18 +42,9 @@ func GetPasswordListView(ctx *c.AppContext) *fyne.Container {
 		}
 	}
 
-	removeAllBtn := widget.NewButtonWithIcon("", theme.DeleteIcon(), func() {
-		dialog.ShowConfirm("Confirmation", "Are you sure you want to remove all the saved password?",
-			func(b bool) {
-				if !b {
-					return
-				}
+	settingsBtn := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {
+		ctx.NavigateTo(c.Settings)
 
-				ctx.Db.Drop()
-				ctx.NavigateTo(c.Setup)
-			},
-			ctx.GetWindow(),
-		)
 	})
 	aboutPageBtn := widget.NewButtonWithIcon("", theme.InfoIcon(), func() {
 		ctx.NavigateTo(c.About)
@@ -73,8 +64,8 @@ func GetPasswordListView(ctx *c.AppContext) *fyne.Container {
 				nil,
 				nil,
 				container.NewHBox(
+					settingsBtn,
 					aboutPageBtn,
-					removeAllBtn,
 				),
 				addNewBtn,
 			),

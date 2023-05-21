@@ -47,6 +47,7 @@ func NewApp() App {
 			c.List:      func() *fyne.Container { return ui.GetPasswordListView(&ctx) },
 			c.Details:   func() *fyne.Container { return ui.GetPasswordDetailsView(&ctx) },
 			c.AddUpdate: func() *fyne.Container { return ui.GetPasswordAddUpdateView(&ctx) },
+			c.Settings:  func() *fyne.Container { return ui.GetSettingsView(&ctx) },
 			c.About:     func() *fyne.Container { return ui.GetAboutView(&ctx) },
 		},
 	}

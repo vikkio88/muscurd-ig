@@ -12,6 +12,7 @@ const (
 	list      string = "LIST"
 	details   string = "DETAILS"
 	addUpdate string = "ADDUPDATE"
+	settings  string = "SETTINGS"
 	about     string = "ABOUT"
 	quit      string = "QUIT"
 
@@ -24,6 +25,7 @@ const (
 	List
 	Details
 	AddUpdate
+	Settings
 	About
 	Quit
 )
@@ -35,6 +37,7 @@ func getMapping() map[AppRoute]string {
 		List:      list,
 		Details:   details,
 		AddUpdate: addUpdate,
+		Settings:  settings,
 		About:     about,
 		Quit:      quit,
 	}
@@ -47,6 +50,7 @@ func getReverseMapping() map[string]AppRoute {
 		list:      List,
 		details:   Details,
 		addUpdate: AddUpdate,
+		settings:  Settings,
 		about:     About,
 		quit:      Quit,
 	}
