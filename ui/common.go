@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
@@ -82,4 +83,24 @@ func topAligned(object fyne.CanvasObject) *fyne.Container {
 
 func bottomAligned(object fyne.CanvasObject) *fyne.Container {
 	return container.NewBorder(nil, object, nil, nil)
+}
+
+func showPasswordDialog(title, placeHolder string, callback func(pwd string), window fyne.Window) {
+	pwdEntry := widget.NewPasswordEntry()
+	pwdEntry.PlaceHolder = placeHolder
+	var d dialog.Dialog
+	okBtn := widget.NewButton("Ok", func() {
+		callback(pwdEntry.Text)
+		d.Hide()
+	})
+	okBtn.Disable()
+	pwdEntry.OnChanged = func(s string) {
+		okBtn.Disable()
+		if len(s) > 2 {
+			okBtn.Enable()
+		}
+	}
+	d = dialog.NewCustom(title, "Cancel", container.NewBorder(nil, nil, nil, okBtn, pwdEntry), window)
+
+	d.Show()
 }

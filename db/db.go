@@ -1,10 +1,14 @@
 package db
 
 import (
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"muscurdig/libs"
 	"muscurdig/models"
+	"os"
+	"path/filepath"
+	"time"
 
 	c "github.com/ostafen/clover/v2"
 )
@@ -45,6 +49,8 @@ func (db *Db) Drop() {
 	db.clover.DropCollection(passwordEntryCollection)
 	db.clover.DropCollection(masterPasswordCollection)
 	db.cache = map[string]any{}
+	// this is to avoid fatal errors in case of drop then continuing
+	setupCollections(db.clover)
 }
 
 func (db *Db) SaveMasterPassword(mp models.MasterPassword) (models.MasterPassword, error) {
@@ -139,8 +145,62 @@ func (db *Db) FilterPasswords(search string) []models.PasswordEntry {
 }
 
 func (db *Db) GetAllPasswords() []models.PasswordEntry {
+	//TODO: maybe I need to check that the collection exists
 	pwDtosDocs, _ := db.clover.FindAll(c.NewQuery(passwordEntryCollection))
 	return db.loadManyPasswordEntry(pwDtosDocs)
+}
+
+func (db *Db) GenerateDump(baseFolder string) (string, error) {
+	dumpDate := time.Now().Format("200601021504")
+	fileName := filepath.Join(baseFolder, fmt.Sprintf("pwds_%s.%s", dumpDate, DumpFileExtension))
+	f, err := os.Create(fileName)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	mp, _ := db.GetMasterPassword()
+	pwDtosDocs, _ := db.clover.FindAll(c.NewQuery(passwordEntryCollection))
+	pwds := loadManyPasswordEntryDto(pwDtosDocs)
+	data := DbDump{
+		mp.Value,
+		pwds,
+	}
+
+	encoder := gob.NewEncoder(f)
+	errEncoding := encoder.Encode(data)
+
+	return fileName, errEncoding
+}
+
+func (db *Db) ImportDump(password string, dumpFileLocation string) error {
+	file, err := os.Open(dumpFileLocation)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	decoder := gob.NewDecoder(file)
+	var importedDump DbDump
+	err = decoder.Decode(&importedDump)
+	if err != nil {
+		return errors.New("Cannot read data dump.")
+	}
+
+	mp := models.NewMasterPasswordFromB64(importedDump.Mp)
+	if !mp.Check(password) {
+		return errors.New("Invalid dump password.")
+	}
+
+	newMp := models.NewMasterPassword(password)
+	cryptoImport := newMp.GetCrypto()
+
+	for _, dto := range importedDump.Pwds {
+		pe := dto.ToPasswordEntry(&cryptoImport)
+		db.InsertPasswordEntry(pe)
+	}
+
+	return nil
 }
 
 func (db *Db) loadManyPasswordEntry(docs []*c.Document) []models.PasswordEntry {
@@ -153,6 +213,16 @@ func (db *Db) loadManyPasswordEntry(docs []*c.Document) []models.PasswordEntry {
 
 	return result
 }
+
+func loadManyPasswordEntryDto(docs []*c.Document) []models.PasswordEntryDto {
+	result := make([]models.PasswordEntryDto, len(docs))
+	for i, doc := range docs {
+		result[i] = *loadPasswordEntryDto(doc)
+	}
+
+	return result
+}
+
 func loadPasswordEntryDto(doc *c.Document) *models.PasswordEntryDto {
 	var dto models.PasswordEntryDto
 	doc.Unmarshal(&dto)
