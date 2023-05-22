@@ -1,3 +1,5 @@
 main
 bin/
 muscurdi_db/
+*.gob
+*.migbak
