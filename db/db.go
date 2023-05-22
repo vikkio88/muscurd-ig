@@ -7,6 +7,7 @@ import (
 	"muscurdig/libs"
 	"muscurdig/models"
 	"os"
+	"path/filepath"
 	"time"
 
 	c "github.com/ostafen/clover/v2"
@@ -48,6 +49,8 @@ func (db *Db) Drop() {
 	db.clover.DropCollection(passwordEntryCollection)
 	db.clover.DropCollection(masterPasswordCollection)
 	db.cache = map[string]any{}
+	// this is to avoid fatal errors in case of drop then continuing
+	setupCollections(db.clover)
 }
 
 func (db *Db) SaveMasterPassword(mp models.MasterPassword) (models.MasterPassword, error) {
@@ -147,9 +150,9 @@ func (db *Db) GetAllPasswords() []models.PasswordEntry {
 	return db.loadManyPasswordEntry(pwDtosDocs)
 }
 
-func (db *Db) GenerateDump() (string, error) {
-	dumpDate := time.Now().Format("2006_01_02_15_04")
-	fileName := fmt.Sprintf("muscurdigdump_%s.gob", dumpDate)
+func (db *Db) GenerateDump(baseFolder string) (string, error) {
+	dumpDate := time.Now().Format("200601021504")
+	fileName := filepath.Join(baseFolder, fmt.Sprintf("pwds_%s.migbak", dumpDate))
 	f, err := os.Create(fileName)
 	if err != nil {
 		return "", err
@@ -159,7 +162,6 @@ func (db *Db) GenerateDump() (string, error) {
 	mp, _ := db.GetMasterPassword()
 	pwDtosDocs, _ := db.clover.FindAll(c.NewQuery(passwordEntryCollection))
 	pwds := loadManyPasswordEntryDto(pwDtosDocs)
-
 	data := DbDump{
 		mp.Value,
 		pwds,
@@ -180,14 +182,23 @@ func (db *Db) ImportDump(password string, dumpFileLocation string) error {
 
 	decoder := gob.NewDecoder(file)
 	var importedDump DbDump
-	decoder.Decode(&importedDump)
+	err = decoder.Decode(&importedDump)
+	if err != nil {
+		return errors.New("Cannot read data dump.")
+	}
 
 	mp := models.NewMasterPasswordFromB64(importedDump.Mp)
 	if !mp.Check(password) {
-		return errors.New("Invalid dump password!")
+		return errors.New("Invalid dump password.")
 	}
 
-	//TODO: New to import password using with the new mp to decrypt and the one in the instance to crypt
+	newMp := models.NewMasterPassword(password)
+	cryptoImport := newMp.GetCrypto()
+
+	for _, dto := range importedDump.Pwds {
+		pe := dto.ToPasswordEntry(&cryptoImport)
+		db.InsertPasswordEntry(pe)
+	}
 
 	return nil
 }

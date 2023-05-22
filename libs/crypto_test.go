@@ -19,5 +19,19 @@ func TestCryptoCodeDecode(t *testing.T) {
 	t1, err1 := libs.Decrypt(c, key)
 	assert.Nil(t, err1)
 	assert.Equal(t, "some stuff", t1)
+}
+
+func TestCryptoDecryptWithTwoDifferentInstances(t *testing.T) {
+	key := "pass"
+	content := "somestuff"
+	c := libs.NewCrypto(key)
+	enc, err := c.EncryptB64(content)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, enc)
+
+	c2 := libs.NewCrypto(key)
+	content2, err2 := c2.DecryptB64(enc)
+	assert.Nil(t, err2)
+	assert.Equal(t, content, content2)
 
 }

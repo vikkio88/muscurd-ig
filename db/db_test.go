@@ -13,7 +13,7 @@ import (
 const (
 	testing_db_folder = "testing_db"
 	master_password   = "mp"
-	dump_file_renamed = "testing_dump.gob"
+	dump_file_renamed = "testing_dump.migbak"
 )
 
 type DbIntegrationTestSuite struct {
@@ -24,7 +24,7 @@ func (suite *DbIntegrationTestSuite) TearDownSuite() {
 	if _, err := os.Stat(testing_db_folder); !os.IsNotExist(err) {
 		os.RemoveAll(testing_db_folder)
 	}
-	if _, err := os.Stat(testing_db_folder); !os.IsNotExist(err) {
+	if _, err := os.Stat(dump_file_renamed); !os.IsNotExist(err) {
 		os.RemoveAll(dump_file_renamed)
 	}
 }
@@ -50,7 +50,7 @@ func (suite *DbIntegrationTestSuite) TestDbIntegrationWorkflow() {
 	pwds = db.FilterPasswords("blu")
 	assert.Len(t, pwds, 0)
 
-	dumpFile, err := db.GenerateDump()
+	dumpFile, err := db.GenerateDump("")
 	assert.Nil(t, err)
 	assert.FileExists(t, dumpFile)
 
@@ -73,6 +73,10 @@ func (suite *DbIntegrationTestSuite) TestDbIntegrationWorkflow() {
 	assert.Nil(t, errImport2)
 	pwds = db.GetAllPasswords()
 	assert.Len(t, pwds, 3)
+
+	pwds = db.FilterPasswords("bla")
+	assert.Len(t, pwds, 1)
+	assert.Equal(t, "bla", pwds[0].Password)
 }
 
 func TestDbIntegrationTests(t *testing.T) {

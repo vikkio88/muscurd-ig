@@ -51,6 +51,9 @@ type PasswordEntryDto struct {
 }
 
 func (p *PasswordEntryDto) ToPasswordEntry(crypto *libs.Crypto) PasswordEntry {
-	clear, _ := crypto.DecryptB64(p.Password)
+	clear, err := crypto.DecryptB64(p.Password)
+	if err != nil {
+		return PasswordEntry{}
+	}
 	return NewPasswordEntryWithId(p.Id, p.Website, p.Username, clear)
 }
