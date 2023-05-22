@@ -152,7 +152,7 @@ func (db *Db) GetAllPasswords() []models.PasswordEntry {
 
 func (db *Db) GenerateDump(baseFolder string) (string, error) {
 	dumpDate := time.Now().Format("200601021504")
-	fileName := filepath.Join(baseFolder, fmt.Sprintf("pwds_%s.migbak", dumpDate))
+	fileName := filepath.Join(baseFolder, fmt.Sprintf("pwds_%s.%s", dumpDate, DumpFileExtension))
 	f, err := os.Create(fileName)
 	if err != nil {
 		return "", err
