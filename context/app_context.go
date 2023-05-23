@@ -11,11 +11,11 @@ type AppContext struct {
 	Version    string
 	Route      binding.String
 	RouteParam any
-	Db         *db.Db
-	w          *fyne.Window
+	Db         db.IDb
+	w          fyne.Window
 }
 
-func NewAppContext(initialRoute AppRoute, db *db.Db, window *fyne.Window) AppContext {
+func NewAppContext(initialRoute AppRoute, db db.IDb, window fyne.Window) AppContext {
 	route := initialRoute.String()
 	return AppContext{
 		Route: binding.BindString(&route),
@@ -25,12 +25,11 @@ func NewAppContext(initialRoute AppRoute, db *db.Db, window *fyne.Window) AppCon
 }
 
 func (s *AppContext) GetClipboard() fyne.Clipboard {
-	w := s.w
-	return (*w).Clipboard()
+	return s.w.Clipboard()
 }
 
 func (s *AppContext) GetWindow() fyne.Window {
-	return *s.w
+	return s.w
 }
 
 // func (s *AppContext) GetAppCanvas() fyne.Canvas {
