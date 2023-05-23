@@ -31,7 +31,7 @@ func NewApp() App {
 	isLogEnabled := conf.EnableConsoleLog
 	db := db.NewDb(conf.DbFiles)
 
-	ctx := setupContext(db, &w)
+	ctx := setupContext(db, w)
 	ctx.Version = conf.Version
 
 	a.Settings().SetTheme(&ui.MuscurdigTheme{})
@@ -96,7 +96,7 @@ func (a *App) Cleanup() {
 	a.log("cleanup finished")
 }
 
-func setupContext(db *db.Db, w *fyne.Window) c.AppContext {
+func setupContext(db *db.Db, w fyne.Window) c.AppContext {
 	initialRoute := c.Login
 	if _, err := db.GetMasterPassword(); err != nil {
 		initialRoute = c.Setup
